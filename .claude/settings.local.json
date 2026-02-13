@@ -1,0 +1,28 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(npx create-remix@latest:*)",
+      "Bash(npx create-react-router@latest:*)",
+      "WebFetch(domain:api.github.com)",
+      "Bash(npm install:*)",
+      "mcp__shadcn__get_project_registries",
+      "Bash(npx shadcn@latest init:*)",
+      "mcp__shadcn__get_add_command_for_items",
+      "Bash(npx shadcn@latest add:*)",
+      "Bash(npm run build:*)",
+      "Bash(~/.nvm/versions/node/v22.14.0/bin/node --version)",
+      "Bash(export PATH=\"$HOME/.nvm/versions/node/v22.14.0/bin:$PATH\")",
+      "Bash(node --version:*)",
+      "mcp__plugin_firebase_firebase__firebase_get_environment",
+      "mcp__plugin_firebase_firebase__firebase_list_projects",
+      "mcp__plugin_firebase_firebase__firebase_login",
+      "Bash(npx firebase:*)",
+      "Bash(firebase login:*)",
+      "Bash(firebase projects:list:*)"
+    ]
+  },
+  "enableAllProjectMcpServers": true,
+  "enabledMcpjsonServers": [
+    "shadcn"
+  ]
+}
