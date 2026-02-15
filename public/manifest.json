@@ -1,0 +1,15 @@
+{
+  "name": "MoodLog",
+  "short_name": "MoodLog",
+  "start_url": "/app/dashboard",
+  "display": "standalone",
+  "background_color": "#e0e7ff",
+  "theme_color": "#e0e7ff",
+  "icons": [
+    {
+      "src": "/favicon.ico",
+      "sizes": "64x64",
+      "type": "image/x-icon"
+    }
+  ]
+}
