@@ -18,7 +18,21 @@
       "mcp__plugin_firebase_firebase__firebase_login",
       "Bash(npx firebase:*)",
       "Bash(firebase login:*)",
-      "Bash(firebase projects:list:*)"
+      "Bash(firebase projects:list:*)",
+      "Bash(git stash:*)",
+      "mcp__plugin_firebase_firebase__firebase_update_environment",
+      "Bash(npx firebase-tools login:*)",
+      "Bash(npx firebase-tools:*)",
+      "Bash(git -C /home/koushi/private-dev/diary stash drop)",
+      "Bash(git -C /home/koushi/private-dev/diary diff --stat)",
+      "Bash(pnpm dev:*)",
+      "Bash(node -e:*)",
+      "Bash(pnpm exec node:*)",
+      "Bash(pnpm -v:*)",
+      "Bash(volta list:*)",
+      "Bash(volta which:*)",
+      "Bash(pnpm exec:*)",
+      "Bash(volta install:*)"
     ]
   },
   "enableAllProjectMcpServers": true,
