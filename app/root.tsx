@@ -30,11 +30,20 @@ export function Layout({ children }: { children: React.ReactNode }) {
     <html lang="ja">
       <head>
         <meta charSet="utf-8" />
-        <meta name="viewport" content="width=device-width, initial-scale=1" />
+        <meta
+          name="viewport"
+          content="width=device-width, initial-scale=1, viewport-fit=cover"
+        />
+        <meta name="apple-mobile-web-app-capable" content="yes" />
+        <meta
+          name="apple-mobile-web-app-status-bar-style"
+          content="black-translucent"
+        />
+        <meta name="theme-color" content="#e0e7ff" />
         <Meta />
         <Links />
       </head>
-      <body>
+      <body className="min-h-screen antialiased">
         {children}
         <ScrollRestoration />
         <Scripts />
@@ -45,12 +54,12 @@ export function Layout({ children }: { children: React.ReactNode }) {
 
 function FirebaseSetupRequired() {
   return (
-    <main className="min-h-screen flex items-center justify-center p-4 bg-background">
-      <div className="max-w-md text-center space-y-4">
+    <main className="min-h-screen flex items-center justify-center p-6">
+      <div className="glass rounded-2xl max-w-sm text-center space-y-4 p-6">
         <h1 className="text-2xl font-bold">MoodLog の設定</h1>
         <p className="text-muted-foreground">
           Firebase の設定が必要です。
-          <code className="block mt-2 p-3 bg-muted rounded text-sm text-left">
+          <code className="block mt-2 p-3 glass-subtle rounded-xl text-sm text-left">
             .env.example をコピーして .env を作成し、
             <br />
             Firebase プロジェクトの認証情報を設定してください。

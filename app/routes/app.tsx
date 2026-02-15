@@ -3,6 +3,7 @@ import { useAuth } from "~/contexts/auth";
 import { Button } from "~/components/ui/button";
 import { useEffect } from "react";
 import { cn } from "~/lib/utils";
+import { LayoutDashboard, PenLine, LogOut } from "lucide-react";
 
 export default function AppLayout() {
   const { user, signOut } = useAuth();
@@ -18,7 +19,9 @@ export default function AppLayout() {
   if (user === "loading") {
     return (
       <div className="min-h-screen flex items-center justify-center">
-        <p className="text-muted-foreground">読み込み中...</p>
+        <div className="glass rounded-2xl px-6 py-4">
+          <p className="text-muted-foreground">読み込み中...</p>
+        </div>
       </div>
     );
   }
@@ -28,64 +31,65 @@ export default function AppLayout() {
   }
 
   return (
-    <div className="min-h-screen">
-      {/* ヘッダー */}
-      <header className="border-b">
-        <div className="container mx-auto px-4 py-3 flex items-center justify-between">
-          <nav className="flex items-center gap-4">
-            <Link
-              to="/app/dashboard"
-              className="text-xl font-bold hover:opacity-80 transition-opacity"
-            >
-              MoodLog
-            </Link>
-            <div className="flex gap-1">
-              <Link
-                to="/app/dashboard"
-                className={cn(
-                  "px-3 py-1.5 rounded-md text-sm font-medium transition-colors",
-                  location.pathname === "/app/dashboard"
-                    ? "bg-accent text-accent-foreground"
-                    : "text-muted-foreground hover:text-foreground hover:bg-accent/50"
-                )}
-              >
-                ダッシュボード
-              </Link>
-              <Link
-                to="/app/quiz"
-                className={cn(
-                  "px-3 py-1.5 rounded-md text-sm font-medium transition-colors",
-                  location.pathname === "/app/quiz"
-                    ? "bg-accent text-accent-foreground"
-                    : "text-muted-foreground hover:text-foreground hover:bg-accent/50"
-                )}
-              >
-                今日の記録
-              </Link>
-            </div>
-          </nav>
-          <div className="flex items-center gap-3">
-            <span className="text-sm text-muted-foreground">
-              {user.displayName}
-            </span>
+    <div className="min-h-screen flex flex-col">
+      {/* ヘッダー（グラスモーフィズム） */}
+      <header className="glass-heavy sticky top-0 z-50 safe-top">
+        <div className="px-4 py-3 flex items-center justify-between">
+          <h1 className="text-lg font-bold tracking-tight">MoodLog</h1>
+          <div className="flex items-center gap-2">
             {user.photoURL && (
               <img
                 src={user.photoURL}
                 alt=""
-                className="w-8 h-8 rounded-full"
+                className="w-8 h-8 rounded-full ring-2 ring-white/30"
               />
             )}
-            <Button variant="outline" size="sm" onClick={signOut}>
-              ログアウト
+            <Button
+              variant="ghost"
+              size="icon-sm"
+              onClick={signOut}
+              className="text-muted-foreground"
+            >
+              <LogOut className="size-4" />
             </Button>
           </div>
         </div>
       </header>
 
       {/* コンテンツ */}
-      <main className="container mx-auto px-4 py-8 max-w-lg">
+      <main className="flex-1 px-4 pt-4 pb-24 max-w-lg mx-auto w-full animate-fade-in">
         <Outlet />
       </main>
+
+      {/* ボトムナビゲーション（フローティンググラス） */}
+      <nav className="fixed bottom-5 inset-x-0 z-50 flex justify-center safe-bottom px-6">
+        <div className="glass-tab-bar flex items-stretch rounded-2xl w-full max-w-xs">
+          <Link
+            to="/app/dashboard"
+            className={cn(
+              "flex-1 flex flex-col items-center gap-1 py-2.5 rounded-2xl transition-all relative",
+              location.pathname === "/app/dashboard"
+                ? "text-primary glass-tab-active"
+                : "text-muted-foreground active:text-foreground"
+            )}
+          >
+            <LayoutDashboard className="size-5" />
+            <span className="text-[10px] font-medium">ダッシュボード</span>
+          </Link>
+          <Link
+            to="/app/quiz"
+            className={cn(
+              "flex-1 flex flex-col items-center gap-1 py-2.5 rounded-2xl transition-all relative",
+              location.pathname === "/app/quiz"
+                ? "text-primary glass-tab-active"
+                : "text-muted-foreground active:text-foreground"
+            )}
+          >
+            <PenLine className="size-5" />
+            <span className="text-[10px] font-medium">今日の記録</span>
+          </Link>
+        </div>
+      </nav>
     </div>
   );
 }
