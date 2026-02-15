@@ -2,11 +2,14 @@ import {
   collection,
   doc,
   setDoc,
+  getDoc,
+  updateDoc,
   serverTimestamp,
   getDocs,
   query,
   orderBy,
   limit,
+  where,
 } from "firebase/firestore";
 import { db } from "./firebase";
 import type { DailyEntry } from "~/types/firestore";
@@ -32,6 +35,37 @@ export async function upsertUser(user: {
   );
 }
 
+/** 通知設定の型 */
+export interface NotificationSettings {
+  notificationEnabled: boolean;
+  notificationHour: string; // "HH:mm"
+}
+
+/** 通知設定を取得 */
+export async function getNotificationSettings(
+  uid: string
+): Promise<NotificationSettings> {
+  const ref = doc(db, "users", uid);
+  const snap = await getDoc(ref);
+  const data = snap.data();
+  return {
+    notificationEnabled: data?.notificationEnabled ?? false,
+    notificationHour: data?.notificationHour ?? "09:00",
+  };
+}
+
+/** 通知設定を保存 */
+export async function saveNotificationSettings(
+  uid: string,
+  settings: NotificationSettings
+): Promise<void> {
+  const ref = doc(db, "users", uid);
+  await updateDoc(ref, {
+    notificationEnabled: settings.notificationEnabled,
+    notificationHour: settings.notificationHour,
+  });
+}
+
 /** 日記エントリーを保存 */
 export async function saveDailyEntry(
   uid: string,
@@ -45,6 +79,39 @@ export async function saveDailyEntry(
     createdAt: serverTimestamp(),
   });
   return newDoc.id;
+}
+
+/** 指定日の記録が存在するか確認 */
+export async function hasEntryForDate(
+  uid: string,
+  date: string
+): Promise<boolean> {
+  const entriesRef = collection(db, "users", uid, "entries");
+  const q = query(entriesRef, where("date", "==", date), limit(1));
+  const snapshot = await getDocs(q);
+  return !snapshot.empty;
+}
+
+/** エントリーを1件取得 */
+export async function getEntry(
+  uid: string,
+  entryId: string
+): Promise<DailyEntry | null> {
+  const ref = doc(db, "users", uid, "entries", entryId);
+  const snap = await getDoc(ref);
+  if (!snap.exists()) return null;
+  const data = snap.data();
+  return {
+    id: snap.id,
+    date: data.date ?? "",
+    valence: data.valence ?? 0,
+    arousal: data.arousal ?? 0,
+    valenceAnswers: data.valenceAnswers ?? [],
+    arousalAnswers: data.arousalAnswers ?? [],
+    activities: data.activities ?? [],
+    freeText: data.freeText ?? "",
+    createdAt: data.createdAt,
+  } as DailyEntry;
 }
 
 /** ユーザーの直近のエントリーを取得 */
