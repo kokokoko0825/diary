@@ -15,7 +15,7 @@ jobs:
       VITE_FIREBASE_STORAGE_BUCKET: moodlog-6297c.firebasestorage.app
       VITE_FIREBASE_MESSAGING_SENDER_ID: "308519914538"
       VITE_FIREBASE_APP_ID: "1:308519914538:web:849b6129b5863ca55ac753"
-      VITE_FIREBASE_VAPID_KEY: BGjGSSSkJun7iH_s6cA2_D0WlVgokwgq4IkgRgA9c9WccpyGZlqVOdrfmwYFFgSR09MZWEutvnLw3Jx0Ujvf6-A
+      VITE_FIREBASE_VAPID_KEY: "BGjGSSSkJun7iH_s6cA2_D0WlVgokwgq4IkgRgA9c9WccpyGZlqVOdrfmwYFFgSR09MZWEutvnLw3Jx0Ujvf6-A"
     steps:
       - uses: actions/checkout@v4
 

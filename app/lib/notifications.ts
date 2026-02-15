@@ -11,7 +11,15 @@ export type NotificationResult =
  * 通知の許可を取得し、FCMトークンを返す
  */
 export async function requestNotificationPermission(): Promise<NotificationResult> {
-  if (!("Notification" in window)) {
+  if (!("Notification" in window) || !("serviceWorker" in navigator)) {
+    // iOS Safariではホーム画面に追加したPWAのみ通知対応
+    const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent);
+    if (isIOS) {
+      return {
+        ok: false,
+        reason: "iOSでは「ホーム画面に追加」してからお試しください",
+      };
+    }
     return { ok: false, reason: "このブラウザは通知に対応していません" };
   }
 
