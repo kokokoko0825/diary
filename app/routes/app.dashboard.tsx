@@ -153,14 +153,16 @@ export default function DashboardPage() {
           <CardContent>
             <ul className="space-y-1">
               {entries.slice(0, 5).map((e) => (
-                <li
-                  key={e.id}
-                  className="flex justify-between items-center py-3 border-b border-white/10 last:border-0"
-                >
-                  <span className="text-sm text-muted-foreground">{e.date}</span>
-                  <span className="font-medium text-sm">
-                    {getEmotionLabel(e.valence, e.arousal)}
-                  </span>
+                <li key={e.id}>
+                  <Link
+                    to={`/app/entry/${e.id}`}
+                    className="flex justify-between items-center py-3 border-b border-white/10 last:border-0 active:opacity-70 transition-opacity"
+                  >
+                    <span className="text-sm text-muted-foreground">{e.date}</span>
+                    <span className="font-medium text-sm">
+                      {getEmotionLabel(e.valence, e.arousal)}
+                    </span>
+                  </Link>
                 </li>
               ))}
             </ul>
