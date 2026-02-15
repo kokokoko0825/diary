@@ -10,8 +10,8 @@ interface Props {
 export function SliderQuestion({ question, value, onChange }: Props) {
   return (
     <div className="space-y-6">
-      <h2 className="text-xl font-semibold text-center">{question.question}</h2>
-      <div className="px-4">
+      <h2 className="text-lg font-semibold text-center leading-snug">{question.question}</h2>
+      <div className="px-2">
         <Slider
           value={[value]}
           onValueChange={([v]) => onChange(v)}
@@ -20,9 +20,9 @@ export function SliderQuestion({ question, value, onChange }: Props) {
           step={1}
           className="w-full"
         />
-        <div className="flex justify-between mt-2 text-sm text-muted-foreground">
+        <div className="flex justify-between mt-3 text-xs text-muted-foreground">
           <span>{question.minLabel}</span>
-          <span className="font-medium text-foreground">
+          <span className="font-medium text-foreground text-sm">
             {value > 0 ? "+" : ""}
             {(value / 100).toFixed(2)}
           </span>

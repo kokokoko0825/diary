@@ -115,10 +115,10 @@ export function QuizContainer() {
   }
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-5 animate-slide-up">
       {/* プログレスバー */}
       <div className="space-y-2">
-        <div className="flex justify-between text-sm text-muted-foreground">
+        <div className="flex justify-between text-xs text-muted-foreground">
           <span>
             質問 {step + 1} / {totalSteps}
           </span>
@@ -168,6 +168,7 @@ export function QuizContainer() {
           onClick={handleBack}
           disabled={step === 0}
           className="flex-1"
+          size="lg"
         >
           戻る
         </Button>
@@ -175,6 +176,7 @@ export function QuizContainer() {
           onClick={handleNext}
           disabled={!canProceed || saving}
           className="flex-1"
+          size="lg"
         >
           {saving
             ? "保存中..."
