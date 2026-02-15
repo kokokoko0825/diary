@@ -114,6 +114,27 @@ export async function getEntry(
   } as DailyEntry;
 }
 
+/** ユーザーの全エントリーを日付昇順で取得（性格診断用） */
+export async function getAllEntries(uid: string): Promise<DailyEntry[]> {
+  const entriesRef = collection(db, "users", uid, "entries");
+  const q = query(entriesRef, orderBy("date", "asc"));
+  const snapshot = await getDocs(q);
+  return snapshot.docs.map((d) => {
+    const data = d.data();
+    return {
+      id: d.id,
+      date: data.date ?? "",
+      valence: data.valence ?? 0,
+      arousal: data.arousal ?? 0,
+      valenceAnswers: data.valenceAnswers ?? [],
+      arousalAnswers: data.arousalAnswers ?? [],
+      activities: data.activities ?? [],
+      freeText: data.freeText ?? "",
+      createdAt: data.createdAt,
+    } as DailyEntry;
+  });
+}
+
 /** ユーザーの直近のエントリーを取得 */
 export async function getRecentEntries(
   uid: string,

@@ -16,6 +16,7 @@ import {
   ReferenceLine,
   ResponsiveContainer,
 } from "recharts";
+import { Brain } from "lucide-react";
 
 export default function DashboardPage() {
   const { user } = useAuth();
@@ -170,9 +171,16 @@ export default function DashboardPage() {
         </Card>
       )}
 
-      <Button asChild className="w-full" size="lg">
-        <Link to="/app/quiz">今日の記録をつける</Link>
-      </Button>
+      <div className="flex gap-3">
+        <Button asChild className="flex-1" size="lg">
+          <Link to="/app/quiz">今日の記録をつける</Link>
+        </Button>
+        <Button asChild variant="outline" size="lg">
+          <Link to="/app/personality">
+            <Brain className="size-4" />
+          </Link>
+        </Button>
+      </div>
     </div>
   );
 }

@@ -3,7 +3,7 @@ import { useAuth } from "~/contexts/auth";
 import { Button } from "~/components/ui/button";
 import { useEffect } from "react";
 import { cn } from "~/lib/utils";
-import { LayoutDashboard, PenLine, Settings, LogOut } from "lucide-react";
+import { LayoutDashboard, PenLine, Brain, Settings, LogOut } from "lucide-react";
 
 export default function AppLayout() {
   const { user, signOut } = useAuth();
@@ -63,7 +63,7 @@ export default function AppLayout() {
 
       {/* ボトムナビゲーション（フローティンググラス） */}
       <nav className="fixed bottom-5 inset-x-0 z-50 flex justify-center safe-bottom px-6">
-        <div className="glass-tab-bar flex items-stretch rounded-2xl w-full max-w-xs">
+        <div className="glass-tab-bar flex items-stretch rounded-2xl w-full max-w-sm">
           <Link
             to="/app/dashboard"
             className={cn(
@@ -87,6 +87,18 @@ export default function AppLayout() {
           >
             <PenLine className="size-5" />
             <span className="text-[10px] font-medium">記録</span>
+          </Link>
+          <Link
+            to="/app/personality"
+            className={cn(
+              "flex-1 flex flex-col items-center gap-1 py-2.5 rounded-2xl transition-all relative",
+              location.pathname === "/app/personality"
+                ? "text-primary glass-tab-active"
+                : "text-muted-foreground active:text-foreground"
+            )}
+          >
+            <Brain className="size-5" />
+            <span className="text-[10px] font-medium">診断</span>
           </Link>
           <Link
             to="/app/settings"

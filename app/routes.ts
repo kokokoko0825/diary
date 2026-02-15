@@ -12,5 +12,6 @@ export default [
     route("app/dashboard", "routes/app.dashboard.tsx"),
     route("app/entry/:id", "routes/app.entry.$id.tsx"),
     route("app/settings", "routes/app.settings.tsx"),
+    route("app/personality", "routes/app.personality.tsx"),
   ]),
 ] satisfies RouteConfig;
