@@ -44,13 +44,13 @@ export default function SettingsPage() {
 
       if (newEnabled) {
         // 通知ONにする場合、許可を取得してトークンを保存
-        const token = await requestNotificationPermission();
-        if (!token) {
-          setMessage("通知の許可が得られませんでした。ブラウザの設定を確認してください。");
+        const result = await requestNotificationPermission();
+        if (!result.ok) {
+          setMessage(result.reason);
           setSaving(false);
           return;
         }
-        await saveFcmToken(user.uid, token);
+        await saveFcmToken(user.uid, result.token);
       }
 
       const newSettings = { ...settings, notificationEnabled: newEnabled };
