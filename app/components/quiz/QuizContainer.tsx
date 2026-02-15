@@ -13,7 +13,7 @@ import {
   calculateValenceArousal,
   collectActivities,
 } from "~/lib/quiz-questions";
-import { saveDailyEntry } from "~/lib/firestore";
+import { saveDailyEntry, hasEntryForDate } from "~/lib/firestore";
 import { useAuth } from "~/contexts/auth";
 
 export function QuizContainer() {
@@ -27,6 +27,16 @@ export function QuizContainer() {
   } | null>(null);
   const [saving, setSaving] = useState(false);
   const [saveError, setSaveError] = useState<string | null>(null);
+  const [alreadyRecorded, setAlreadyRecorded] = useState(false);
+  const [checking, setChecking] = useState(true);
+
+  useEffect(() => {
+    if (!user || user === "loading") return;
+    const today = new Date().toISOString().split("T")[0];
+    hasEntryForDate(user.uid, today)
+      .then((exists) => setAlreadyRecorded(exists))
+      .finally(() => setChecking(false));
+  }, [user]);
 
   const totalSteps = quizQuestions.length;
   const currentQuestion = quizQuestions[step];
@@ -102,6 +112,38 @@ export function QuizContainer() {
   const handleBack = () => {
     if (step > 0) setStep(step - 1);
   };
+
+  if (checking) {
+    return (
+      <div className="flex items-center justify-center py-16">
+        <div className="glass rounded-2xl px-6 py-4">
+          <p className="text-muted-foreground text-sm">読み込み中...</p>
+        </div>
+      </div>
+    );
+  }
+
+  if (alreadyRecorded) {
+    return (
+      <div className="space-y-5 animate-slide-up">
+        <Card>
+          <CardContent className="pt-6 text-center space-y-3">
+            <p className="text-lg font-semibold">今日はもう記録済みです</p>
+            <p className="text-sm text-muted-foreground">
+              1日1回のみ記録できます。また明日記録しましょう。
+            </p>
+          </CardContent>
+        </Card>
+        <Button
+          onClick={() => navigate("/app/dashboard")}
+          className="w-full"
+          size="lg"
+        >
+          ダッシュボードへ
+        </Button>
+      </div>
+    );
+  }
 
   if (isComplete && result) {
     return (

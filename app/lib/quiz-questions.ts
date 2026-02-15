@@ -130,7 +130,7 @@ export const quizQuestions: QuizQuestion[] = [
   {
     id: "freetext-1",
     type: "text",
-    question: "今日の出来事や感じたことを自由に書いてください",
+    question: "日記",
     category: "freetext",
   },
 ];
