@@ -21,7 +21,7 @@ messaging.onBackgroundMessage((payload) => {
   const title = payload.notification?.title || "MoodLog";
   const options = {
     body: payload.notification?.body || "今日の気分を記録しましょう",
-    icon: "/favicon.ico",
+    icon: "/icon.png",
   };
   self.registration.showNotification(title, options);
 });
