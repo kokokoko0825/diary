@@ -5,3 +5,7 @@
 # React Router
 /.react-router/
 /build/
+
+# Firebase
+.firebase/
+firebase-debug.log
