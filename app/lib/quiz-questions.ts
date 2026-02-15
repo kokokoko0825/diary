@@ -138,24 +138,41 @@ export const quizQuestions: QuizQuestion[] = [
 
 /**
  * クイズ回答から Valence/Arousal を算出
- * スライダー: -1.0 ~ 1.0 をそのまま使用
+ * スライダー: -100~100 を -1.0~1.0 に変換 (value / 100)
  * 5段階: 1~5 を -1.0~1.0 にマッピング → (value - 3) / 2
  */
 export function calculateValenceArousal(answers: Record<string, unknown>) {
-  const sliderValence = (answers["valence-1"] as number) ?? 0;
-  const radioValence = (Number(answers["valence-2"]) - 3) / 2;
+  const rawSliderValence = (answers["valence-1"] as number) ?? 0;
+  const sliderValence = rawSliderValence / 100;
+  const v2 = Number(answers["valence-2"]);
+  const radioValence = Number.isNaN(v2) ? 0 : (v2 - 3) / 2;
   const valence = (sliderValence + radioValence) / 2;
 
-  const sliderArousal = (answers["arousal-1"] as number) ?? 0;
-  const radioArousal = (Number(answers["arousal-2"]) - 3) / 2;
+  const rawSliderArousal = (answers["arousal-1"] as number) ?? 0;
+  const sliderArousal = rawSliderArousal / 100;
+  const a2 = Number(answers["arousal-2"]);
+  const radioArousal = Number.isNaN(a2) ? 0 : (a2 - 3) / 2;
   const arousal = (sliderArousal + radioArousal) / 2;
 
   return {
     valence: Math.round(valence * 100) / 100,
     arousal: Math.round(arousal * 100) / 100,
-    valenceAnswers: [sliderValence, Number(answers["valence-2"])],
-    arousalAnswers: [sliderArousal, Number(answers["arousal-2"])],
+    valenceAnswers: [sliderValence, v2],
+    arousalAnswers: [sliderArousal, a2],
   };
+}
+
+/** ラッセル感情円環モデル上の感情ラベルを取得 */
+export function getEmotionLabel(valence: number, arousal: number): string {
+  if (valence > 0.3 && arousal > 0.3) return "興奮・喜び";
+  if (valence > 0.3 && arousal < -0.3) return "穏やか・満足";
+  if (valence < -0.3 && arousal > 0.3) return "怒り・緊張";
+  if (valence < -0.3 && arousal < -0.3) return "悲しみ・倦怠";
+  if (valence > 0.3) return "幸福";
+  if (valence < -0.3) return "不快";
+  if (arousal > 0.3) return "覚醒";
+  if (arousal < -0.3) return "沈静";
+  return "ニュートラル";
 }
 
 /** 回答から活動タグを収集 */

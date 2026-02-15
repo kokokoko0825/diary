@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { useNavigate } from "react-router";
 import { Button } from "~/components/ui/button";
 import { Progress } from "~/components/ui/progress";
@@ -26,10 +26,17 @@ export function QuizContainer() {
     arousal: number;
   } | null>(null);
   const [saving, setSaving] = useState(false);
+  const [saveError, setSaveError] = useState<string | null>(null);
 
   const totalSteps = quizQuestions.length;
   const currentQuestion = quizQuestions[step];
   const isComplete = result !== null;
+
+  // クリック時に最新の answers を参照するため ref に同期
+  const answersRef = useRef(answers);
+  useEffect(() => {
+    answersRef.current = answers;
+  }, [answers]);
 
   const setAnswer = (value: unknown) => {
     setAnswers((prev) => ({ ...prev, [currentQuestion.id]: value }));
@@ -55,13 +62,16 @@ export function QuizContainer() {
     if (step < totalSteps - 1) {
       setStep(step + 1);
     } else {
-      // 全問完了 → 計算して保存
+      // 全問完了 → 計算して保存（ref から最新の answers を取得）
       setSaving(true);
+      setSaveError(null);
+      const latestAnswers = answersRef.current;
+
       try {
         const { valence, arousal, valenceAnswers, arousalAnswers } =
-          calculateValenceArousal(answers);
-        const activities = collectActivities(answers);
-        const freeText = (answers["freetext-1"] as string) ?? "";
+          calculateValenceArousal(latestAnswers);
+        const activities = collectActivities(latestAnswers);
+        const freeText = (latestAnswers["freetext-1"] as string) ?? "";
 
         if (user && user !== "loading") {
           await saveDailyEntry(user.uid, {
@@ -76,6 +86,13 @@ export function QuizContainer() {
         }
 
         setResult({ valence, arousal });
+      } catch (err) {
+        setSaveError(
+          err instanceof Error ? err.message : "保存に失敗しました。"
+        );
+        // エラーでも結果は表示
+        const { valence, arousal } = calculateValenceArousal(latestAnswers);
+        setResult({ valence, arousal });
       } finally {
         setSaving(false);
       }
@@ -86,11 +103,12 @@ export function QuizContainer() {
     if (step > 0) setStep(step - 1);
   };
 
-  if (isComplete) {
+  if (isComplete && result) {
     return (
       <QuizComplete
         valence={result.valence}
         arousal={result.arousal}
+        saveError={saveError}
         onClose={() => navigate("/app/dashboard")}
       />
     );

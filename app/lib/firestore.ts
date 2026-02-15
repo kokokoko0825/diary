@@ -3,6 +3,10 @@ import {
   doc,
   setDoc,
   serverTimestamp,
+  getDocs,
+  query,
+  orderBy,
+  limit,
 } from "firebase/firestore";
 import { db } from "./firebase";
 import type { DailyEntry } from "~/types/firestore";
@@ -41,4 +45,32 @@ export async function saveDailyEntry(
     createdAt: serverTimestamp(),
   });
   return newDoc.id;
+}
+
+/** ユーザーの直近のエントリーを取得 */
+export async function getRecentEntries(
+  uid: string,
+  maxCount = 30
+): Promise<DailyEntry[]> {
+  const entriesRef = collection(db, "users", uid, "entries");
+  const q = query(
+    entriesRef,
+    orderBy("createdAt", "desc"),
+    limit(maxCount)
+  );
+  const snapshot = await getDocs(q);
+  return snapshot.docs.map((d) => {
+    const data = d.data();
+    return {
+      id: d.id,
+      date: data.date ?? "",
+      valence: data.valence ?? 0,
+      arousal: data.arousal ?? 0,
+      valenceAnswers: data.valenceAnswers ?? [],
+      arousalAnswers: data.arousalAnswers ?? [],
+      activities: data.activities ?? [],
+      freeText: data.freeText ?? "",
+      createdAt: data.createdAt,
+    } as DailyEntry;
+  });
 }

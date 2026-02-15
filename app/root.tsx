@@ -9,6 +9,7 @@ import {
 
 import type { Route } from "./+types/root";
 import { AuthProvider } from "~/contexts/auth";
+import { isFirebaseReady } from "~/lib/firebase";
 import "./app.css";
 
 export const links: Route.LinksFunction = () => [
@@ -42,7 +43,40 @@ export function Layout({ children }: { children: React.ReactNode }) {
   );
 }
 
+function FirebaseSetupRequired() {
+  return (
+    <main className="min-h-screen flex items-center justify-center p-4 bg-background">
+      <div className="max-w-md text-center space-y-4">
+        <h1 className="text-2xl font-bold">MoodLog の設定</h1>
+        <p className="text-muted-foreground">
+          Firebase の設定が必要です。
+          <code className="block mt-2 p-3 bg-muted rounded text-sm text-left">
+            .env.example をコピーして .env を作成し、
+            <br />
+            Firebase プロジェクトの認証情報を設定してください。
+          </code>
+        </p>
+        <p className="text-sm text-muted-foreground">
+          <a
+            href="https://console.firebase.google.com/"
+            target="_blank"
+            rel="noreferrer"
+            className="text-primary underline"
+          >
+            Firebase Console
+          </a>
+          でプロジェクトを作成し、Authentication（Google）と Firestore を有効にしてください。
+        </p>
+      </div>
+    </main>
+  );
+}
+
 export default function App() {
+  if (!isFirebaseReady) {
+    return <FirebaseSetupRequired />;
+  }
+
   return (
     <AuthProvider>
       <Outlet />

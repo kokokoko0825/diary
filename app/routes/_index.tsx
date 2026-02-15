@@ -10,7 +10,7 @@ export default function IndexPage() {
 
   useEffect(() => {
     if (user && user !== "loading") {
-      navigate("/app/quiz");
+      navigate("/app/dashboard");
     }
   }, [user, navigate]);
 

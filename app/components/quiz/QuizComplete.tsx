@@ -1,26 +1,20 @@
 import { Button } from "~/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "~/components/ui/card";
+import { getEmotionLabel } from "~/lib/quiz-questions";
 
 interface Props {
   valence: number;
   arousal: number;
+  saveError?: string | null;
   onClose: () => void;
 }
 
-/** ラッセル感情円環モデル上の感情ラベル */
-function getEmotionLabel(valence: number, arousal: number): string {
-  if (valence > 0.3 && arousal > 0.3) return "興奮・喜び";
-  if (valence > 0.3 && arousal < -0.3) return "穏やか・満足";
-  if (valence < -0.3 && arousal > 0.3) return "怒り・緊張";
-  if (valence < -0.3 && arousal < -0.3) return "悲しみ・倦怠";
-  if (valence > 0.3) return "幸福";
-  if (valence < -0.3) return "不快";
-  if (arousal > 0.3) return "覚醒";
-  if (arousal < -0.3) return "沈静";
-  return "ニュートラル";
-}
-
-export function QuizComplete({ valence, arousal, onClose }: Props) {
+export function QuizComplete({
+  valence,
+  arousal,
+  saveError,
+  onClose,
+}: Props) {
   const label = getEmotionLabel(valence, arousal);
 
   // 円環上の位置を計算 (SVG座標: 中心150,150 半径120)
@@ -161,6 +155,11 @@ export function QuizComplete({ valence, arousal, onClose }: Props) {
           </div>
         </CardContent>
       </Card>
+      {saveError && (
+        <p className="text-sm text-destructive bg-destructive/10 p-3 rounded-md">
+          保存に失敗しました: {saveError}
+        </p>
+      )}
       <Button onClick={onClose} className="w-full" size="lg">
         ダッシュボードへ
       </Button>
