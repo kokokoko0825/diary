@@ -14,6 +14,7 @@ import {
   collectActivities,
 } from "~/lib/quiz-questions";
 import { saveDailyEntry, hasEntryForDate } from "~/lib/firestore";
+import { getTodayJST } from "~/lib/date";
 import { useAuth } from "~/contexts/auth";
 
 export function QuizContainer() {
@@ -32,7 +33,7 @@ export function QuizContainer() {
 
   useEffect(() => {
     if (!user || user === "loading") return;
-    const today = new Date().toISOString().split("T")[0];
+    const today = getTodayJST();
     hasEntryForDate(user.uid, today)
       .then((exists) => setAlreadyRecorded(exists))
       .finally(() => setChecking(false));
@@ -85,7 +86,7 @@ export function QuizContainer() {
 
         if (user && user !== "loading") {
           await saveDailyEntry(user.uid, {
-            date: new Date().toISOString().split("T")[0],
+            date: getTodayJST(),
             valence,
             arousal,
             valenceAnswers,
