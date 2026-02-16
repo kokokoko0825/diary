@@ -32,7 +32,13 @@
       "Bash(volta list:*)",
       "Bash(volta which:*)",
       "Bash(pnpm exec:*)",
-      "Bash(volta install:*)"
+      "Bash(volta install:*)",
+      "Bash(npx tsc:*)",
+      "Bash(git add:*)",
+      "Bash(git commit:*)",
+      "Bash(ls:*)",
+      "Bash(git push:*)",
+      "Bash(ssh-add:*)"
     ]
   },
   "enableAllProjectMcpServers": true,
