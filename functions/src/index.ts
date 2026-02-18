@@ -54,11 +54,16 @@ export const sendDailyReminder = onSchedule(
         messaging
           .send({
             token: fcmToken,
-            notification: {
+            data: {
               title: "MoodLog",
               body: "今日の気分を記録しましょう",
+              url: "/app/quiz",
             },
             webpush: {
+              headers: {
+                Urgency: "high",
+                TTL: "86400",
+              },
               fcmOptions: {
                 link: "https://moodlog-6297c.web.app/app/quiz",
               },
