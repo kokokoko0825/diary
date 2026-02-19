@@ -51,7 +51,8 @@ self.addEventListener("push", (event) => {
   }
 
   // FCM の notification ペイロードがある場合はブラウザが自動表示するためスキップ
-  if (data.notification && !data.data) return;
+  // iOS Safari では notification ペイロードの方が確実に届く
+  if (data.notification) return;
 
   const payload = data.data || data;
   const title = payload.title || "MoodLog";

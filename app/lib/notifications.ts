@@ -38,6 +38,8 @@ export async function requestNotificationPermission(): Promise<NotificationResul
     const swRegistration = await navigator.serviceWorker.register(
       "/firebase-messaging-sw.js"
     );
+    // SW が active になるまで待つ（no active Service Worker エラー防止）
+    await navigator.serviceWorker.ready;
     const token = await getToken(messaging, {
       vapidKey,
       serviceWorkerRegistration: swRegistration,

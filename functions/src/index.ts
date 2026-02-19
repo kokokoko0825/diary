@@ -11,14 +11,41 @@ const messaging = getMessaging();
 /**
  * 毎分実行し、現在時刻に通知設定があるユーザーにプッシュ通知を送信
  */
+/**
+ * 東京時間の現在時刻を取得
+ * Cloud FunctionsはUTCで動作するため、toLocaleString→parseは誤動作する
+ * Intl.DateTimeFormatで確実に東京時間の components を取得する
+ */
+function getTokyoNow(): { currentTime: string; today: string } {
+  const now = new Date();
+  const fmt = new Intl.DateTimeFormat("en-CA", {
+    timeZone: "Asia/Tokyo",
+    year: "numeric",
+    month: "2-digit",
+    day: "2-digit",
+    hour: "2-digit",
+    minute: "2-digit",
+    second: "2-digit",
+    hour12: false,
+  });
+  const parts = fmt.formatToParts(now);
+  const get = (type: Intl.DateTimeFormatPartTypes) =>
+    parts.find((p) => p.type === type)?.value ?? "";
+  const year = get("year");
+  const month = get("month");
+  const day = get("day");
+  const hour = get("hour");
+  const minute = get("minute");
+  return {
+    currentTime: `${hour}:${minute}`,
+    today: `${year}-${month}-${day}`,
+  };
+}
+
 export const sendDailyReminder = onSchedule(
   { schedule: "every 1 minutes", timeZone: "Asia/Tokyo" },
   async () => {
-    const now = new Date(
-      new Date().toLocaleString("en-US", { timeZone: "Asia/Tokyo" })
-    );
-    const currentTime = `${String(now.getHours()).padStart(2, "0")}:${String(now.getMinutes()).padStart(2, "0")}`;
-    const today = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, "0")}-${String(now.getDate()).padStart(2, "0")}`;
+    const { currentTime, today } = getTokyoNow();
 
     // 現在時刻に通知設定があり、通知が有効なユーザーを取得
     const usersSnap = await db
@@ -54,6 +81,10 @@ export const sendDailyReminder = onSchedule(
         messaging
           .send({
             token: fcmToken,
+            notification: {
+              title: "MoodLog",
+              body: "今日の気分を記録しましょう",
+            },
             data: {
               title: "MoodLog",
               body: "今日の気分を記録しましょう",
