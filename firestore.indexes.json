@@ -46,15 +46,6 @@
   //     ]
   //   },
   // ]
-  "indexes": [
-    {
-      "collectionGroup": "users",
-      "queryScope": "COLLECTION",
-      "fields": [
-        { "fieldPath": "notificationEnabled", "order": "ASCENDING" },
-        { "fieldPath": "notificationHour", "order": "ASCENDING" }
-      ]
-    }
-  ],
+  "indexes": [],
   "fieldOverrides": []
 }

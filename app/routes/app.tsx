@@ -3,7 +3,7 @@ import { useAuth } from "~/contexts/auth";
 import { Button } from "~/components/ui/button";
 import { useEffect } from "react";
 import { cn } from "~/lib/utils";
-import { LayoutDashboard, PenLine, Brain, Settings, LogOut } from "lucide-react";
+import { LayoutDashboard, PenLine, Brain, LogOut } from "lucide-react";
 
 export default function AppLayout() {
   const { user, signOut } = useAuth();
@@ -99,18 +99,6 @@ export default function AppLayout() {
           >
             <Brain className="size-5" />
             <span className="text-[10px] font-medium">診断</span>
-          </Link>
-          <Link
-            to="/app/settings"
-            className={cn(
-              "flex-1 flex flex-col items-center gap-1 py-2.5 rounded-2xl transition-all relative",
-              location.pathname === "/app/settings"
-                ? "text-primary glass-tab-active"
-                : "text-muted-foreground active:text-foreground"
-            )}
-          >
-            <Settings className="size-5" />
-            <span className="text-[10px] font-medium">設定</span>
           </Link>
         </div>
       </nav>

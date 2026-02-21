@@ -35,10 +35,9 @@ export async function upsertUser(user: {
   );
 }
 
-/** 通知設定の型 */
+/** 通知設定の型（22:00固定） */
 export interface NotificationSettings {
   notificationEnabled: boolean;
-  notificationHour: string; // "HH:mm"
 }
 
 /** 通知設定を取得 */
@@ -50,7 +49,6 @@ export async function getNotificationSettings(
   const data = snap.data();
   return {
     notificationEnabled: data?.notificationEnabled ?? false,
-    notificationHour: data?.notificationHour ?? "09:00",
   };
 }
 
@@ -62,7 +60,6 @@ export async function saveNotificationSettings(
   const ref = doc(db, "users", uid);
   await updateDoc(ref, {
     notificationEnabled: settings.notificationEnabled,
-    notificationHour: settings.notificationHour,
   });
 }
 

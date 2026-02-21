@@ -9,7 +9,7 @@ const db = getFirestore();
 const messaging = getMessaging();
 
 /**
- * 毎分実行し、現在時刻に通知設定があるユーザーにプッシュ通知を送信
+ * 毎日22:00（東京時間）に通知が有効な全ユーザーにプッシュ通知を送信
  */
 /**
  * 東京時間の現在時刻を取得
@@ -43,30 +43,18 @@ function getTokyoNow(): { currentTime: string; today: string } {
 }
 
 export const sendDailyReminder = onSchedule(
-  { schedule: "every 1 minutes", timeZone: "Asia/Tokyo" },
+  { schedule: "0 22 * * *", timeZone: "Asia/Tokyo" },
   async () => {
-    const { currentTime, today } = getTokyoNow();
-    console.log(`[sendDailyReminder] start: currentTime=${currentTime}, today=${today}`);
+    const { today } = getTokyoNow();
+    console.log(`[sendDailyReminder] start: today=${today}`);
 
-    // 診断: notificationEnabled=true のユーザーがいるか確認
-    const enabledSnap = await db
-      .collection("users")
-      .where("notificationEnabled", "==", true)
-      .get();
-    console.log(`[sendDailyReminder] users with notificationEnabled=true: ${enabledSnap.size}`);
-    for (const d of enabledSnap.docs) {
-      const d_ = d.data();
-      console.log(`[sendDailyReminder]   uid=${d.id} notificationHour=${d_.notificationHour} fcmToken=${d_.fcmToken ? "set" : "empty"}`);
-    }
-
-    // 現在時刻に通知設定があり、通知が有効なユーザーを取得
+    // 通知が有効な全ユーザーを取得
     const usersSnap = await db
       .collection("users")
       .where("notificationEnabled", "==", true)
-      .where("notificationHour", "==", currentTime)
       .get();
 
-    console.log(`[sendDailyReminder] matched users: ${usersSnap.size}`);
+    console.log(`[sendDailyReminder] users with notificationEnabled=true: ${usersSnap.size}`);
     if (usersSnap.empty) return;
 
     const sendPromises: Promise<void>[] = [];

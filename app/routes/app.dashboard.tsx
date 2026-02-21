@@ -3,7 +3,12 @@ import { Link } from "react-router";
 import { Button } from "~/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "~/components/ui/card";
 import { useAuth } from "~/contexts/auth";
-import { getEntriesByDateRange } from "~/lib/firestore";
+import {
+  getEntriesByDateRange,
+  getNotificationSettings,
+  saveNotificationSettings,
+} from "~/lib/firestore";
+import { requestNotificationPermission, saveFcmToken } from "~/lib/notifications";
 import { getEmotionLabel } from "~/lib/quiz-questions";
 import type { DailyEntry } from "~/types/firestore";
 import {
@@ -42,8 +47,35 @@ export default function DashboardPage() {
   const [entries, setEntries] = useState<DailyEntry[]>([]);
   const [loading, setLoading] = useState(true);
   const [selectedRange, setSelectedRange] = useState<RangeKey>("1m");
+  const [notificationEnabled, setNotificationEnabled] = useState(false);
+  const [notificationLoading, setNotificationLoading] = useState(false);
 
   const rangeDays = RANGES.find((r) => r.key === selectedRange)!.days;
+
+  useEffect(() => {
+    if (!user || user === "loading") return;
+    getNotificationSettings(user.uid).then((s) => setNotificationEnabled(s.notificationEnabled));
+  }, [user]);
+
+  const handleEnableNotification = async () => {
+    if (!user || user === "loading") return;
+    setNotificationLoading(true);
+    try {
+      const result = await requestNotificationPermission();
+      if (!result.ok) {
+        alert(result.reason);
+        return;
+      }
+      await saveFcmToken(user.uid, result.token);
+      await saveNotificationSettings(user.uid, { notificationEnabled: true });
+      setNotificationEnabled(true);
+    } catch (err) {
+      console.error(err);
+      alert("通知の有効化に失敗しました");
+    } finally {
+      setNotificationLoading(false);
+    }
+  };
 
   useEffect(() => {
     if (!user || user === "loading") return;
@@ -75,6 +107,25 @@ export default function DashboardPage() {
   return (
     <div className="space-y-5 animate-slide-up">
       <h2 className="text-xl font-bold">ダッシュボード</h2>
+
+      {/* 22時リマインダー（未有効の場合のみ表示） */}
+      {!notificationEnabled && (
+        <Card>
+          <CardHeader>
+            <CardTitle className="text-base">リマインダー通知</CardTitle>
+            <CardDescription>毎日22時に今日の記録をお知らせします</CardDescription>
+          </CardHeader>
+          <CardContent>
+            <Button
+              onClick={handleEnableNotification}
+              disabled={notificationLoading}
+              className="w-full"
+            >
+              {notificationLoading ? "設定中..." : "通知をONにする"}
+            </Button>
+          </CardContent>
+        </Card>
+      )}
 
       <Card>
         <CardHeader>
