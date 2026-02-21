@@ -20,13 +20,13 @@ function getTokyoNow(): { currentTime: string; today: string } {
   const now = new Date();
   const fmt = new Intl.DateTimeFormat("en-CA", {
     timeZone: "Asia/Tokyo",
+    hourCycle: "h23",
     year: "numeric",
     month: "2-digit",
     day: "2-digit",
     hour: "2-digit",
     minute: "2-digit",
     second: "2-digit",
-    hour12: false,
   });
   const parts = fmt.formatToParts(now);
   const get = (type: Intl.DateTimeFormatPartTypes) =>
@@ -46,6 +46,18 @@ export const sendDailyReminder = onSchedule(
   { schedule: "every 1 minutes", timeZone: "Asia/Tokyo" },
   async () => {
     const { currentTime, today } = getTokyoNow();
+    console.log(`[sendDailyReminder] start: currentTime=${currentTime}, today=${today}`);
+
+    // 診断: notificationEnabled=true のユーザーがいるか確認
+    const enabledSnap = await db
+      .collection("users")
+      .where("notificationEnabled", "==", true)
+      .get();
+    console.log(`[sendDailyReminder] users with notificationEnabled=true: ${enabledSnap.size}`);
+    for (const d of enabledSnap.docs) {
+      const d_ = d.data();
+      console.log(`[sendDailyReminder]   uid=${d.id} notificationHour=${d_.notificationHour} fcmToken=${d_.fcmToken ? "set" : "empty"}`);
+    }
 
     // 現在時刻に通知設定があり、通知が有効なユーザーを取得
     const usersSnap = await db
@@ -54,6 +66,7 @@ export const sendDailyReminder = onSchedule(
       .where("notificationHour", "==", currentTime)
       .get();
 
+    console.log(`[sendDailyReminder] matched users: ${usersSnap.size}`);
     if (usersSnap.empty) return;
 
     const sendPromises: Promise<void>[] = [];
@@ -63,19 +76,19 @@ export const sendDailyReminder = onSchedule(
       const fcmToken = data.fcmToken as string | undefined;
       const lastNotifiedDate = data.lastNotifiedDate as string | undefined;
 
-      // トークンがない、または今日既に通知済みならスキップ
-      if (!fcmToken || lastNotifiedDate === today) continue;
+      // トークンがない場合はスキップ
+      if (!fcmToken) {
+        console.log(`[sendDailyReminder] skip ${userDoc.id}: no fcmToken`);
+        continue;
+      }
 
-      // 今日の記録があるかチェック
-      const entriesSnap = await db
-        .collection("users")
-        .doc(userDoc.id)
-        .collection("entries")
-        .where("date", "==", today)
-        .limit(1)
-        .get();
+      // 今日既に通知済みならスキップ
+      if (lastNotifiedDate === today) {
+        console.log(`[sendDailyReminder] skip ${userDoc.id}: already notified today`);
+        continue;
+      }
 
-      if (!entriesSnap.empty) continue; // 既に記録済み
+      console.log(`[sendDailyReminder] sending to ${userDoc.id}`);
 
       sendPromises.push(
         messaging
@@ -101,9 +114,11 @@ export const sendDailyReminder = onSchedule(
             },
           })
           .then(async () => {
+            console.log(`[sendDailyReminder] success: ${userDoc.id}`);
             await userDoc.ref.update({ lastNotifiedDate: today });
           })
           .catch(async (err) => {
+            console.error(`[sendDailyReminder] error for ${userDoc.id}: code=${err.code}, message=${err.message}`);
             // トークンが無効な場合はクリア
             if (
               err.code === "messaging/registration-token-not-registered" ||
@@ -111,11 +126,11 @@ export const sendDailyReminder = onSchedule(
             ) {
               await userDoc.ref.update({ fcmToken: "" });
             }
-            console.error(`Failed to send to ${userDoc.id}:`, err.message);
           })
       );
     }
 
     await Promise.all(sendPromises);
+    console.log(`[sendDailyReminder] done: sent ${sendPromises.length} notifications`);
   }
 );

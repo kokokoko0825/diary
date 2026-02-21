@@ -135,6 +135,36 @@ export async function getAllEntries(uid: string): Promise<DailyEntry[]> {
   });
 }
 
+/** 期間指定でエントリーを取得（日付昇順） */
+export async function getEntriesByDateRange(
+  uid: string,
+  startDate: string,
+  endDate: string
+): Promise<DailyEntry[]> {
+  const entriesRef = collection(db, "users", uid, "entries");
+  const q = query(
+    entriesRef,
+    where("date", ">=", startDate),
+    where("date", "<=", endDate),
+    orderBy("date", "asc")
+  );
+  const snapshot = await getDocs(q);
+  return snapshot.docs.map((d) => {
+    const data = d.data();
+    return {
+      id: d.id,
+      date: data.date ?? "",
+      valence: data.valence ?? 0,
+      arousal: data.arousal ?? 0,
+      valenceAnswers: data.valenceAnswers ?? [],
+      arousalAnswers: data.arousalAnswers ?? [],
+      activities: data.activities ?? [],
+      freeText: data.freeText ?? "",
+      createdAt: data.createdAt,
+    } as DailyEntry;
+  });
+}
+
 /** ユーザーの直近のエントリーを取得 */
 export async function getRecentEntries(
   uid: string,

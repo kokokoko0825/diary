@@ -3,7 +3,7 @@ import { Link } from "react-router";
 import { Button } from "~/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "~/components/ui/card";
 import { useAuth } from "~/contexts/auth";
-import { getRecentEntries } from "~/lib/firestore";
+import { getEntriesByDateRange } from "~/lib/firestore";
 import { getEmotionLabel } from "~/lib/quiz-questions";
 import type { DailyEntry } from "~/types/firestore";
 import {
@@ -18,15 +18,39 @@ import {
 } from "recharts";
 import { Brain } from "lucide-react";
 
+const RANGES = [
+  { key: "1w", label: "1週間", days: 7 },
+  { key: "1m", label: "1ヶ月", days: 30 },
+  { key: "3m", label: "3ヶ月", days: 90 },
+  { key: "6m", label: "6ヶ月", days: 180 },
+  { key: "1y", label: "1年", days: 365 },
+] as const;
+
+type RangeKey = (typeof RANGES)[number]["key"];
+
+function getDateRange(days: number) {
+  const now = new Date();
+  // Asia/Tokyo の今日の日付
+  const endDate = now.toLocaleDateString("sv-SE", { timeZone: "Asia/Tokyo" });
+  const start = new Date(now.getTime() - days * 24 * 60 * 60 * 1000);
+  const startDate = start.toLocaleDateString("sv-SE", { timeZone: "Asia/Tokyo" });
+  return { startDate, endDate };
+}
+
 export default function DashboardPage() {
   const { user } = useAuth();
   const [entries, setEntries] = useState<DailyEntry[]>([]);
   const [loading, setLoading] = useState(true);
+  const [selectedRange, setSelectedRange] = useState<RangeKey>("1m");
+
+  const rangeDays = RANGES.find((r) => r.key === selectedRange)!.days;
 
   useEffect(() => {
     if (!user || user === "loading") return;
     let cancelled = false;
-    getRecentEntries(user.uid)
+    setLoading(true);
+    const { startDate, endDate } = getDateRange(rangeDays);
+    getEntriesByDateRange(user.uid, startDate, endDate)
       .then((data) => {
         if (!cancelled) setEntries(data);
       })
@@ -36,16 +60,17 @@ export default function DashboardPage() {
     return () => {
       cancelled = true;
     };
-  }, [user]);
+  }, [user, rangeDays]);
 
-  const chartData = [...entries]
-    .reverse()
-    .map((e) => ({
-      date: e.date.slice(5),
-      valence: e.valence,
-      arousal: e.arousal,
-      感情: getEmotionLabel(e.valence, e.arousal),
-    }));
+  const showDots = rangeDays <= 90;
+
+  const chartData = entries.map((e) => ({
+    date: rangeDays <= 90 ? e.date.slice(5) : e.date.slice(0, 7),
+    fullDate: e.date,
+    valence: e.valence,
+    arousal: e.arousal,
+    感情: getEmotionLabel(e.valence, e.arousal),
+  }));
 
   return (
     <div className="space-y-5 animate-slide-up">
@@ -57,13 +82,30 @@ export default function DashboardPage() {
           <CardDescription>気分のポジティブ度と活性度の日々の変化</CardDescription>
         </CardHeader>
         <CardContent>
+          {/* 期間選択ボタン */}
+          <div className="flex gap-1.5 mb-4 overflow-x-auto">
+            {RANGES.map((r) => (
+              <button
+                key={r.key}
+                onClick={() => setSelectedRange(r.key)}
+                className={`px-3 py-1 rounded-full text-xs font-medium transition-colors whitespace-nowrap ${
+                  selectedRange === r.key
+                    ? "bg-primary text-primary-foreground"
+                    : "bg-muted/50 text-muted-foreground hover:bg-muted"
+                }`}
+              >
+                {r.label}
+              </button>
+            ))}
+          </div>
+
           {loading ? (
             <p className="text-muted-foreground py-8 text-center text-sm">
               読み込み中...
             </p>
           ) : entries.length === 0 ? (
             <p className="text-muted-foreground py-8 text-center text-sm">
-              データがありません。今日の記録をつけてみましょう。
+              この期間のデータがありません。
             </p>
           ) : (
             <>
@@ -77,6 +119,7 @@ export default function DashboardPage() {
                       stroke="oklch(0.5 0.02 270)"
                       axisLine={false}
                       tickLine={false}
+                      interval="preserveStartEnd"
                     />
                     <ReferenceLine y={0} stroke="oklch(0.5 0.02 270)" strokeWidth={1} />
                     <YAxis
@@ -97,7 +140,7 @@ export default function DashboardPage() {
                           <div
                             className="glass rounded-xl px-3 py-2 text-xs space-y-1"
                           >
-                            <p className="font-semibold text-foreground">{data.date}</p>
+                            <p className="font-semibold text-foreground">{data.fullDate}</p>
                             <p className="text-foreground/80">
                               快・不快: <span className="font-medium">{data.valence?.toFixed(2)}</span>
                             </p>
@@ -117,7 +160,7 @@ export default function DashboardPage() {
                       name="快・不快"
                       stroke="oklch(0.55 0.2 265)"
                       strokeWidth={2}
-                      dot={{ r: 3.5 }}
+                      dot={showDots ? { r: 3.5 } : false}
                     />
                     <Line
                       type="monotone"
@@ -125,7 +168,7 @@ export default function DashboardPage() {
                       name="活性度"
                       stroke="oklch(0.6 0.22 290)"
                       strokeWidth={2}
-                      dot={{ r: 3.5 }}
+                      dot={showDots ? { r: 3.5 } : false}
                     />
                   </LineChart>
                 </ResponsiveContainer>
@@ -153,7 +196,7 @@ export default function DashboardPage() {
           </CardHeader>
           <CardContent>
             <ul className="space-y-1">
-              {entries.slice(0, 5).map((e) => (
+              {entries.slice(-5).reverse().map((e) => (
                 <li key={e.id}>
                   <Link
                     to={`/app/entry/${e.id}`}
