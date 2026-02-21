@@ -30,11 +30,6 @@ jobs:
 
       - run: pnpm run build
 
-      - name: Authenticate to Google Cloud
-        uses: google-github-actions/auth@v2
-        with:
-          credentials_json: ${{ secrets.FIREBASE_SERVICE_ACCOUNT_MOODLOG_6297C }}
-
       - name: Deploy to Firebase Hosting
         uses: FirebaseExtended/action-hosting-deploy@v0
         with:
@@ -43,8 +38,12 @@ jobs:
           channelId: live
           projectId: moodlog-6297c
 
+      - name: Build Firebase Functions
+        run: cd functions && npm ci && npm run build
+
       - name: Deploy to Firebase Functions
-        run: |
-          npm install -g firebase-tools
-          cd functions && npm ci && npm run build && cd ..
-          firebase deploy --only functions --project moodlog-6297c --non-interactive
+        uses: w9jds/firebase-action@master
+        with:
+          args: deploy --only functions --project moodlog-6297c --non-interactive
+        env:
+          GCP_SA_KEY: ${{ secrets.FIREBASE_SERVICE_ACCOUNT_MOODLOG_6297C }}
