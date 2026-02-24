@@ -42,8 +42,9 @@ function getTokyoNow(): { currentTime: string; today: string } {
   };
 }
 
+// 22:00 JST = 13:00 UTC（Asia/Tokyo指定でずれる場合があるためUTCで明示）
 export const sendDailyReminder = onSchedule(
-  { schedule: "0 22 * * *", timeZone: "Asia/Tokyo" },
+  { schedule: "0 13 * * *", timeZone: "UTC" },
   async () => {
     const { today } = getTokyoNow();
     console.log(`[sendDailyReminder] start: today=${today}`);
