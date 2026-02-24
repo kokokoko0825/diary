@@ -1,87 +1,80 @@
-# Welcome to React Router!
+# MoodLog (diary)
 
-A modern, production-ready template for building full-stack React applications using React Router.
+気分・日記を記録し、ダッシュボードで可視化するWebアプリ。記録データをもとにした性格診断機能あり。
 
-[![Open in StackBlitz](https://developer.stackblitz.com/img/open_in_stackblitz.svg)](https://stackblitz.com/github/remix-run/react-router-templates/tree/main/default)
+## 主な機能
 
-## Features
+- **記録（Quiz）**: 快・不快（valence）と活性度（arousal）の質問に回答し、活動タグと自由記述で日々の記録を保存
+- **ダッシュボード**: 期間指定で気分推移をグラフ表示（Recharts）
+- **性格診断**: 蓄積したエントリーから性格傾向を表示
+- **日記エントリー**: 日付ごとの記録の閲覧・編集
+- **認証**: Firebase Authentication（要ログイン）
+- **通知**: Firebase Cloud Messaging / Functions によるリマインダー（22:00、設定でON/OFF）
 
-- 🚀 Server-side rendering
-- ⚡️ Hot Module Replacement (HMR)
-- 📦 Asset bundling and optimization
-- 🔄 Data loading and mutations
-- 🔒 TypeScript by default
-- 🎉 TailwindCSS for styling
-- 📖 [React Router docs](https://reactrouter.com/)
+## 技術スタック
 
-## Getting Started
+| 分類 | 技術 |
+|------|------|
+| フロント | React 19, React Router 7, TypeScript, Tailwind CSS 4, shadcn/ui, Recharts |
+| BaaS | Firebase（Auth, Firestore, Hosting, Functions） |
+| パッケージ | pnpm |
 
-### Installation
+## 前提条件
 
-Install the dependencies:
+- Node.js 20
+- pnpm（`corepack enable` の上で `pnpm` を使用）
+- Firebase プロジェクト（Auth, Firestore, Cloud Messaging 有効）
 
-```bash
-npm install
-```
-
-### Development
-
-Start the development server with HMR:
-
-```bash
-npm run dev
-```
-
-Your application will be available at `http://localhost:5173`.
-
-## Building for Production
-
-Create a production build:
+## セットアップ
 
 ```bash
-npm run build
+git clone https://github.com/kokokoko0825/diary.git
+cd diary
+pnpm install
 ```
 
-## Deployment
+Firebase の設定は環境変数で行う。`.env.local` に以下を用意する（値は Firebase コンソールから取得）。
 
-### Docker Deployment
+- `VITE_FIREBASE_API_KEY`
+- `VITE_FIREBASE_AUTH_DOMAIN`
+- `VITE_FIREBASE_PROJECT_ID`
+- `VITE_FIREBASE_STORAGE_BUCKET`
+- `VITE_FIREBASE_MESSAGING_SENDER_ID`
+- `VITE_FIREBASE_APP_ID`
+- `VITE_FIREBASE_VAPID_KEY`（Push 通知用）
 
-To build and run using Docker:
+## 開発
 
 ```bash
-docker build -t my-app .
-
-# Run the container
-docker run -p 3000:3000 my-app
+pnpm dev
 ```
 
-The containerized application can be deployed to any platform that supports Docker, including:
+`http://localhost:5173` で起動。
 
-- AWS ECS
-- Google Cloud Run
-- Azure Container Apps
-- Digital Ocean App Platform
-- Fly.io
-- Railway
+## ビルド
 
-### DIY Deployment
-
-If you're familiar with deploying Node applications, the built-in app server is production-ready.
-
-Make sure to deploy the output of `npm run build`
-
-```
-├── package.json
-├── package-lock.json (or pnpm-lock.yaml, or bun.lockb)
-├── build/
-│   ├── client/    # Static assets
-│   └── server/    # Server-side code
+```bash
+pnpm run build
 ```
 
-## Styling
+出力は `build/client`（静的アセット）と `build/server`（SSR用）。
 
-This template comes with [Tailwind CSS](https://tailwindcss.com/) already configured for a simple default starting experience. You can use whatever CSS framework you prefer.
+## デプロイ
 
----
+- **Firebase Hosting**: `build/client` をホスティング。`main` への push で GitHub Actions がビルド後に Firebase へデプロイする。
+- **Firebase Functions**: `functions/` を別途デプロイ。Functions デプロイの権限・API 設定は [docs/DEPLOY_SETUP.md](docs/DEPLOY_SETUP.md) を参照。
 
-Built with ❤️ using React Router.
+### Docker（任意）
+
+```bash
+docker build -t diary .
+docker run -p 3000:3000 diary
+```
+
+## ドキュメント
+
+- [Firebase Functions デプロイの権限設定](docs/DEPLOY_SETUP.md)
+
+## ライセンス
+
+Private repository.
