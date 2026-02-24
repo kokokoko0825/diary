@@ -61,3 +61,13 @@ jobs:
           echo "--- 最終エラー ---"
           tail -60 deploy.log
           exit 1
+
+      - name: デプロイ失敗時のログを Summary に出力
+        if: failure()
+        run: |
+          if [ -f deploy.log ]; then
+            echo "## Firebase Functions deploy エラー（末尾100行）" >> $GITHUB_STEP_SUMMARY
+            echo '```' >> $GITHUB_STEP_SUMMARY
+            tail -100 deploy.log >> $GITHUB_STEP_SUMMARY
+            echo '```' >> $GITHUB_STEP_SUMMARY
+          fi
