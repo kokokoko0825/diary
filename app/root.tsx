@@ -46,7 +46,7 @@ export function Layout({ children }: { children: React.ReactNode }) {
         <Meta />
         <Links />
       </head>
-      <body className="min-h-screen antialiased">
+      <body className="min-h-screen antialiased pb-4 safe-bottom">
         {children}
         <ScrollRestoration />
         <Scripts />

@@ -57,7 +57,7 @@ export default function AppLayout() {
       </header>
 
       {/* コンテンツ */}
-      <main className="flex-1 px-4 pt-4 pb-24 w-full animate-fade-in">
+      <main className="flex-1 px-4 pt-4 pb-28 w-full animate-fade-in">
         <Outlet />
       </main>
 

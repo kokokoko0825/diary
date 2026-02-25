@@ -43,7 +43,7 @@ export default function DashboardPage() {
   const { user } = useAuth();
   const [entries, setEntries] = useState<DailyEntry[]>([]);
   const [loading, setLoading] = useState(true);
-  const [selectedRange, setSelectedRange] = useState<RangeKey>("1m");
+  const [selectedRange, setSelectedRange] = useState<RangeKey>("1w");
   const [notificationEnabled, setNotificationEnabled] = useState(false);
   const [notificationLoading, setNotificationLoading] = useState(false);
 
