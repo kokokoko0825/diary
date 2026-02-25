@@ -4,6 +4,22 @@ GitHub Actions では **Hosting** と **Functions** の両方に同じサービ�
 
 - **Hosting のデプロイが失敗する場合**: サービスアカウントに **Firebase Hosting Admin**（`roles/firebasehosting.admin`）を付与する。
 - **Functions のデプロイが失敗する場合**: 以下に従って権限と API を設定する。
+- **`Cloud Billing API has not been used` / HTTP 403** が出る場合: 下記「0. 請求の有効化」を実施する。
+
+---
+
+## 0. 請求（Billing）の有効化（Functions デプロイに必須）
+
+Cloud Functions をデプロイするには、プロジェクトで **請求が有効** である必要があります。
+
+1. **Cloud Billing API を有効化**  
+   [Cloud Billing API を有効にする](https://console.cloud.google.com/apis/api/cloudbilling.googleapis.com/overview?project=moodlog-6297c) を開き、「有効にする」をクリック。
+
+2. **プロジェクトに請求先アカウントをリンク**  
+   [請求先アカウントの管理](https://console.cloud.google.com/billing/linkedaccount?project=moodlog-6297c) を開き、プロジェクトに請求先をリンクする（未リンクの場合）。  
+   ※ 無料枠内でも、Functions 利用には請求先のリンクが必要です。
+
+有効化後、数分たってから再度デプロイを実行してください。
 
 ---
 
@@ -96,28 +112,30 @@ gcloud projects add-iam-policy-binding $PROJECT_ID \
 
 ---
 
-## 2. デフォルト Compute サービスアカウントへの権限（必須）
+## 2. デフォルト サービスアカウントへの権限（必須）
 
-`You do not have permission iam.serviceAccounts.ActAs` のようなエラーを防ぐため、**「あなたの SA メール」** に、プロジェクトのデフォルトの App Engine サービスアカウントを「使用」する権限を付与します。
+`You do not have permission iam.serviceAccounts.ActAs` のようなエラーを防ぐため、**「あなたの SA メール」** に、**Default compute service account** を「使用」する権限を付与します。
+
+**対象:** 一覧の **「Default compute service account」**（`308519914538-compute@developer.gserviceaccount.com`）の行をクリックし、その「アクセス権を持つプリンシパル」に GitHub Actions 用 SA を追加する。
 
 ### 方法 A：Google Cloud Console
 
 1. [IAM と管理 → サービスアカウント](https://console.cloud.google.com/iam-admin/serviceaccounts?project=moodlog-6297c) を開く
-2. 一覧から **`moodlog-6297c@appspot.gserviceaccount.com`**（App Engine のデフォルト サービスアカウント）の行をクリック
-3. 上部の **「権限」** タブを開く
-4. **「アクセス権を付与」** をクリック
-5. **「新しいプリンシパル」** に **「あなたの SA メール」** を入力
-6. **「ロール」** で **「Service Account User」**（サービス アカウント ユーザー）を選ぶ
+2. 一覧から **「Default compute service account」**（`308519914538-compute@developer.gserviceaccount.com`）の行をクリック
+3. **「アクセス権を持つプリンシパル」**（または「権限」）タブを開く
+4. **「アクセスを許可」** をクリック
+5. **「新しいプリンシパル」** に **「あなたの SA メール」**（例: `github-action-1157369733@moodlog-6297c.iam.gserviceaccount.com`）を入力
+6. **「ロール」** で **「サービス アカウント ユーザー」** を選ぶ
 7. **「保存」** をクリック
 
 ### 方法 B：gcloud コマンド
 
 ```bash
 PROJECT_ID="moodlog-6297c"
-SA_EMAIL="あなたのSAメール"
-DEFAULT_SA="${PROJECT_ID}@appspot.gserviceaccount.com"
+SA_EMAIL="あなたのSAメール"   # 例: github-action-1157369733@moodlog-6297c.iam.gserviceaccount.com
+COMPUTE_SA="308519914538-compute@developer.gserviceaccount.com"
 
-gcloud iam service-accounts add-iam-policy-binding $DEFAULT_SA \
+gcloud iam service-accounts add-iam-policy-binding $COMPUTE_SA \
   --member="serviceAccount:$SA_EMAIL" \
   --role="roles/iam.serviceAccountUser" \
   --project=$PROJECT_ID
@@ -157,7 +175,7 @@ gcloud services enable artifactregistry.googleapis.com --project=$PROJECT_ID
 
 - **IAM**
   - [IAM のメンバー一覧](https://console.cloud.google.com/iam-admin/iam?project=moodlog-6297c) で **「あなたの SA メール」** を検索し、上記 7 ロールが付いていることを確認
-  - [サービスアカウント一覧](https://console.cloud.google.com/iam-admin/serviceaccounts?project=moodlog-6297c) で `moodlog-6297c@appspot.gserviceaccount.com` を開き、**「あなたの SA メール」** に「サービス アカウント ユーザー」が付いていることを確認
+  - [サービスアカウント一覧](https://console.cloud.google.com/iam-admin/serviceaccounts?project=moodlog-6297c) で「Default compute service account」を開き、**「あなたの SA メール」** に「サービス アカウント ユーザー」が付いていることを確認
 - **API**
   - [有効な API 一覧](https://console.cloud.google.com/apis/dashboard?project=moodlog-6297c) で、上記 4 API が「有効」になっていることを確認
 

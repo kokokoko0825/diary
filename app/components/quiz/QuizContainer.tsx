@@ -8,13 +8,9 @@ import { RadioQuestion } from "./RadioQuestion";
 import { CheckboxQuestion } from "./CheckboxQuestion";
 import { TextQuestion } from "./TextQuestion";
 import { QuizComplete } from "./QuizComplete";
-import {
-  quizQuestions,
-  calculateValenceArousal,
-  collectActivities,
-} from "~/lib/quiz-questions";
+import { quizQuestions, calculateValenceArousal, collectActivities } from "~/lib/quiz-questions";
 import { saveDailyEntry, hasEntryForDate } from "~/lib/firestore";
-import { getTodayJST } from "~/lib/date";
+import { getDiaryDateUtc3 } from "~/lib/date";
 import { useAuth } from "~/contexts/auth";
 
 export function QuizContainer() {
@@ -33,7 +29,7 @@ export function QuizContainer() {
 
   useEffect(() => {
     if (!user || user === "loading") return;
-    const today = getTodayJST();
+    const today = getDiaryDateUtc3();
     hasEntryForDate(user.uid, today)
       .then((exists) => setAlreadyRecorded(exists))
       .finally(() => setChecking(false));
@@ -86,7 +82,7 @@ export function QuizContainer() {
 
         if (user && user !== "loading") {
           await saveDailyEntry(user.uid, {
-            date: getTodayJST(),
+            date: getDiaryDateUtc3(),
             valence,
             arousal,
             valenceAnswers,

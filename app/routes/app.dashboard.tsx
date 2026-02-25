@@ -22,6 +22,7 @@ import {
   ResponsiveContainer,
 } from "recharts";
 import { Brain } from "lucide-react";
+import { getDiaryRangeUtc3 } from "~/lib/date";
 
 const RANGES = [
   { key: "1w", label: "1週間", days: 7 },
@@ -34,11 +35,7 @@ const RANGES = [
 type RangeKey = (typeof RANGES)[number]["key"];
 
 function getDateRange(days: number) {
-  const now = new Date();
-  // Asia/Tokyo の今日の日付
-  const endDate = now.toLocaleDateString("sv-SE", { timeZone: "Asia/Tokyo" });
-  const start = new Date(now.getTime() - days * 24 * 60 * 60 * 1000);
-  const startDate = start.toLocaleDateString("sv-SE", { timeZone: "Asia/Tokyo" });
+  const { startDate, endDate } = getDiaryRangeUtc3(days);
   return { startDate, endDate };
 }
 
