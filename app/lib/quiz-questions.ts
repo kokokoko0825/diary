@@ -20,35 +20,48 @@ export interface QuizQuestion {
 }
 
 export const quizQuestions: QuizQuestion[] = [
-  // 感情測定: Valence (2問)
+  // 感情測定: Valence (3問)
   {
     id: "valence-1",
     type: "slider",
-    question: "今日の気分はどちらに近いですか？",
-    minLabel: "不快",
-    maxLabel: "快",
+    question: "今日一日を通しての気分はどちらに近いですか？",
+    minLabel: "とても嫌な一日だった",
+    maxLabel: "とても良い一日だった",
     category: "valence",
   },
   {
     id: "valence-2",
     type: "radio",
-    question: "今日、ポジティブな感情を感じましたか？",
+    question: "今日、「うれしい・楽しい・満足」と感じる瞬間はどのくらいありましたか？",
     options: [
-      { label: "まったく", value: "1" },
-      { label: "少し", value: "2" },
-      { label: "ふつう", value: "3" },
-      { label: "かなり", value: "4" },
-      { label: "とても", value: "5" },
+      { label: "まったくなかった", value: "1" },
+      { label: "ほとんどなかった", value: "2" },
+      { label: "ときどきあった", value: "3" },
+      { label: "よくあった", value: "4" },
+      { label: "たくさんあった", value: "5" },
     ],
     category: "valence",
   },
-  // 感情測定: Arousal (2問)
+  {
+    id: "valence-3",
+    type: "radio",
+    question: "今日、「不安・イライラ・落ち込み」と感じる瞬間はどのくらいありましたか？",
+    options: [
+      { label: "まったくなかった", value: "1" },
+      { label: "ほとんどなかった", value: "2" },
+      { label: "ときどきあった", value: "3" },
+      { label: "よくあった", value: "4" },
+      { label: "たくさんあった", value: "5" },
+    ],
+    category: "valence",
+  },
+  // 感情測定: Arousal (3問 + 行動)
   {
     id: "arousal-1",
     type: "slider",
-    question: "今の気持ちは落ち着いていますか？それとも高ぶっていますか？",
-    minLabel: "落ち着いている",
-    maxLabel: "高ぶっている",
+    question: "今日はどちらかというと、落ち着いていましたか？それともそわそわ・高ぶっていましたか？",
+    minLabel: "とても落ち着いていた",
+    maxLabel: "とてもそわそわ・高ぶっていた",
     category: "arousal",
   },
   {
@@ -59,12 +72,20 @@ export const quizQuestions: QuizQuestion[] = [
       { label: "まったく", value: "1" },
       { label: "少し", value: "2" },
       { label: "ふつう", value: "3" },
-      { label: "かなり", value: "4" },
-      { label: "とても", value: "5" },
+      { label: "よく", value: "4" },
+      { label: "非常に", value: "5" },
     ],
     category: "arousal",
   },
-  // 活動タグ (5問)
+  {
+    id: "arousal-3",
+    type: "slider",
+    question: "今の体と心の元気さはどのくらいですか？",
+    minLabel: "まったく力が出ない",
+    maxLabel: "とてもエネルギッシュ",
+    category: "arousal",
+  },
+  // 活動タグ (5問) — 値は personality-assessment のために維持
   {
     id: "activity-1",
     type: "checkbox",
@@ -137,27 +158,95 @@ export const quizQuestions: QuizQuestion[] = [
 
 /**
  * クイズ回答から Valence/Arousal を算出
- * スライダー: -100~100 を -1.0~1.0 に変換 (value / 100)
- * 5段階: 1~5 を -1.0~1.0 にマッピング → (value - 3) / 2
+ *
+ * - スライダー: -100~100 を -1.0~1.0 に変換 (value / 100)
+ * - 5段階: 1~5 を -1.0~1.0 にマッピング → (value - 3) / 2
+ * - Arousal には一部の活動質問（睡眠の質・人との交流・新しいことへの挑戦）も反映する
  */
 export function calculateValenceArousal(answers: Record<string, unknown>) {
+  // Valence components
   const rawSliderValence = (answers["valence-1"] as number) ?? 0;
   const sliderValence = rawSliderValence / 100;
-  const v2 = Number(answers["valence-2"]);
-  const radioValence = Number.isNaN(v2) ? 0 : (v2 - 3) / 2;
-  const valence = (sliderValence + radioValence) / 2;
 
-  const rawSliderArousal = (answers["arousal-1"] as number) ?? 0;
-  const sliderArousal = rawSliderArousal / 100;
-  const a2 = Number(answers["arousal-2"]);
-  const radioArousal = Number.isNaN(a2) ? 0 : (a2 - 3) / 2;
-  const arousal = (sliderArousal + radioArousal) / 2;
+  const rawV2 = Number(answers["valence-2"]);
+  const valence2 = Number.isNaN(rawV2) ? null : (rawV2 - 3) / 2;
+
+  const rawV3 = Number(answers["valence-3"]);
+  // ネガティブ感情の頻度: 少ない(1)→+1, 多い(5)→-1 のため (3-value)/2
+  const valence3 = Number.isNaN(rawV3) ? null : (3 - rawV3) / 2;
+
+  const valenceComponents: number[] = [sliderValence];
+  if (valence2 !== null) valenceComponents.push(valence2);
+  if (valence3 !== null) valenceComponents.push(valence3);
+
+  const valence =
+    valenceComponents.length > 0
+      ? valenceComponents.reduce((sum, v) => sum + v, 0) / valenceComponents.length
+      : 0;
+
+  // Arousal components (主観)
+  const rawSliderArousal1 = (answers["arousal-1"] as number) ?? 0;
+  const sliderArousal1 = rawSliderArousal1 / 100;
+
+  const rawA2 = Number(answers["arousal-2"]);
+  const arousal2 = Number.isNaN(rawA2) ? null : (rawA2 - 3) / 2;
+
+  const rawSliderArousal3 = (answers["arousal-3"] as number) ?? 0;
+  const sliderArousal3 = rawSliderArousal3 / 100;
+
+  const arousalComponents: number[] = [sliderArousal1, sliderArousal3];
+  if (arousal2 !== null) arousalComponents.push(arousal2);
+
+  // Arousal components (行動: 睡眠の質)
+  const rawSleep = Number(answers["activity-3"]);
+  let sleepComponent: number | null = null;
+  if (!Number.isNaN(rawSleep) && rawSleep >= 1 && rawSleep <= 5) {
+    sleepComponent = (rawSleep - 3) / 2;
+    arousalComponents.push(sleepComponent);
+  }
+
+  // Arousal components (行動: 人との交流)
+  const socialRaw = answers["activity-4"];
+  const socialMap: Record<string, number> = {
+    "まったくなし": -1,
+    "ほとんどなし": -0.5,
+    "少し": 0,
+    "たくさん": 1,
+  };
+  let socialComponent: number | null = null;
+  if (typeof socialRaw === "string" && socialRaw in socialMap) {
+    socialComponent = socialMap[socialRaw];
+    arousalComponents.push(socialComponent);
+  }
+
+  // Arousal components (行動: 新しいことへの挑戦)
+  const noveltyRaw = answers["activity-5"];
+  let noveltyComponent: number | null = null;
+  if (noveltyRaw === "はい") {
+    noveltyComponent = 0.5;
+    arousalComponents.push(noveltyComponent);
+  }
+
+  const arousal =
+    arousalComponents.length > 0
+      ? arousalComponents.reduce((sum, v) => sum + v, 0) / arousalComponents.length
+      : 0;
 
   return {
     valence: Math.round(valence * 100) / 100,
     arousal: Math.round(arousal * 100) / 100,
-    valenceAnswers: [sliderValence, v2],
-    arousalAnswers: [sliderArousal, a2],
+    // 生回答と正規化済みの一部を記録（将来の分析用）
+    valenceAnswers: [sliderValence, rawV2, rawV3].filter(
+      (v): v is number => typeof v === "number" && !Number.isNaN(v),
+    ),
+    arousalAnswers: [
+      sliderArousal1,
+      rawA2,
+      sliderArousal3,
+      rawSleep,
+      socialComponent,
+      noveltyComponent,
+    ].filter((v): v is number => typeof v === "number" && !Number.isNaN(v)),
   };
 }
 
