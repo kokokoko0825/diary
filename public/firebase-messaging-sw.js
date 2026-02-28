@@ -17,23 +17,6 @@ firebase.initializeApp({
 
 const messaging = firebase.messaging();
 
-// Android / Desktop Chrome 向け (FCM が自動表示しないデータメッセージ用)
-messaging.onBackgroundMessage((payload) => {
-  // push イベントで既に表示済みならスキップ
-  if (payload.data?._handledByPush) return;
-
-  const title = payload.notification?.title || payload.data?.title || "MoodLog";
-  const options = {
-    body:
-      payload.notification?.body ||
-      payload.data?.body ||
-      "今日の気分を記録しましょう",
-    icon: "/icon.png",
-    data: { url: payload.data?.url || "/app/quiz" },
-  };
-  self.registration.showNotification(title, options);
-});
-
 // iOS Safari PWA 向け — 標準 Web Push API の push イベント
 self.addEventListener("push", (event) => {
   // Firebase SDK が既にハンドルした場合はスキップ
