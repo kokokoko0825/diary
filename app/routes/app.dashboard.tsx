@@ -258,6 +258,9 @@ export default function DashboardPage() {
                 </li>
               ))}
             </ul>
+            <Button asChild variant="ghost" size="sm" className="w-full mt-2">
+              <Link to="/app/history">履歴を見る</Link>
+            </Button>
           </CardContent>
         </Card>
       )}

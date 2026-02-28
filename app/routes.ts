@@ -10,6 +10,7 @@ export default [
   layout("routes/app.tsx", [
     route("app/quiz", "routes/app.quiz.tsx"),
     route("app/dashboard", "routes/app.dashboard.tsx"),
+    route("app/history", "routes/app.history.tsx"),
     route("app/entry/:id", "routes/app.entry.$id.tsx"),
     route("app/personality", "routes/app.personality.tsx"),
   ]),
